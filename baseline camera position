@@ -1,0 +1,19 @@
+import bpy
+
+face_name = 'Head'  # Update if different
+
+face = bpy.data.objects[face_name]
+cam = bpy.data.objects['Camera']
+
+# Zoom in (higher lens = tighter crop)
+cam.data.lens = 100  # Test 70-100
+
+# Re-center on face
+bpy.context.view_layer.objects.active = face
+face.select_set(True)
+bpy.ops.view3d.camera_to_view_selected()
+
+# Pull back slightly for fit
+cam.location = cam.location.normalized() * 1.0  # Test 0.8-1.2
+
+print("Camera tightened — test F12 render")
