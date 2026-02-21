@@ -1,0 +1,100 @@
+import bpy
+import math
+from mathutils import Vector, Euler
+
+# User-configurable names
+face_name = 'Head'  # Update to your face object name
+
+# Baselines
+azimuth_deg = 45
+elevation_deg = 30
+distance = 0.8
+temp = 6200.0
+key_intensity = 4.0
+fill_intensity = 1.0  # 0.25 ratio for balanced shadows
+light_size = 0.2  # Panel size m
+
+# To radians
+azimuth = math.radians(azimuth_deg)
+elevation = math.radians(elevation_deg)
+
+# Set head at origin
+face = bpy.data.objects[face_name]
+face.location = (0, 0, 0)
+face.rotation_euler = (0, 0, 0)
+
+# Face center
+face_center = Vector((0, 0, 0))
+
+# Position key light (Area.001)
+x = distance * math.sin(azimuth) * math.cos(elevation)
+y = -distance * math.cos(azimuth) * math.cos(elevation)
+z = distance * math.sin(elevation)
+
+if 'Area.001' not in bpy.data.objects:
+    bpy.ops.object.light_add(type='AREA')
+    key_light = bpy.context.object
+    key_light.name = 'Area.001'
+else:
+    key_light = bpy.data.objects['Area.001']
+
+key_light.location = (x, y, z)
+
+# Aim key at face
+direction = face_center - key_light.location
+quat = direction.to_track_quat('-Z', 'Y')
+key_light.rotation_euler = quat.to_euler()
+
+# Set key temp/intensity/size
+key_data = key_light.data
+key_data.use_temperature = True
+key_data.temperature = temp
+key_data.energy = key_intensity
+key_data.shape = 'RECTANGLE'
+key_data.size = light_size
+key_data.size_y = light_size
+
+# Mirror to fill (Area.002)
+if 'Area.002' not in bpy.data.objects:
+    bpy.context.view_layer.objects.active = key_light
+    key_light.select_set(True)
+    bpy.ops.object.duplicate()
+    fill_light = bpy.context.object
+    fill_light.name = 'Area.002'
+else:
+    fill_light = bpy.data.objects['Area.002']
+
+fill_light.location = (-x, y, z)
+
+# Aim fill at face
+fill_direction = face_center - fill_light.location
+fill_quat = fill_direction.to_track_quat('-Z', 'Y')
+fill_light.rotation_euler = fill_quat.to_euler()
+
+# Set fill temp/intensity/size
+fill_data = fill_light.data
+fill_data.use_temperature = True
+fill_data.temperature = temp
+fill_data.energy = fill_intensity
+fill_data.shape = 'RECTANGLE'
+fill_data.size = light_size
+fill_data.size_y = light_size
+
+# Camera setup
+cam_name = 'Camera'
+if cam_name not in bpy.data.objects:
+    bpy.ops.object.camera_add(location=(0, -1.5, 0.2))
+cam = bpy.data.objects[cam_name]
+bpy.context.scene.camera = cam
+cam.rotation_euler = (math.radians(90), 0, 0)  # Front view
+cam.data.lens = 50
+cam.data.clip_start = 0.01
+cam.data.clip_end = 100
+
+# Align camera to face
+bpy.context.view_layer.objects.active = face
+face.select_set(True)
+bpy.ops.view3d.camera_to_view_selected()
+cam.location = cam.location.normalized() * 1.2  # Pull back for fit
+
+print("Baseline setup complete — check Rendered view")
