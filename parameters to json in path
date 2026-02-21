@@ -1,0 +1,55 @@
+import bpy
+import json
+import os
+from mathutils import Vector
+import math
+
+# Configurable
+face_name = 'Head'  # Update per model
+json_folder = r'/path/to/json_folder'  # Update to your path
+os.makedirs(json_folder, exist_ok=True)
+
+key_name = 'Area.001'
+fill_name = 'Area.002'
+
+face_center = bpy.data.objects[face_name].location
+
+key_light = bpy.data.objects[key_name]
+fill_light = bpy.data.objects[fill_name]
+
+key_data = key_light.data
+fill_data = fill_light.data
+
+key_distance = (key_light.location - face_center).length
+fill_distance = (fill_light.location - face_center).length
+
+key_azimuth = math.degrees(key_light.rotation_euler.y)
+key_elevation = math.degrees(key_light.rotation_euler.x)
+fill_azimuth = math.degrees(fill_light.rotation_euler.y)
+fill_elevation = math.degrees(fill_light.rotation_euler.x)
+
+data = {
+  "optimal_params": {
+    "key_azimuth": key_azimuth,
+    "key_elevation": key_elevation,
+    "key_temp": key_data.temperature,
+    "key_intensity": key_data.energy,
+    "key_distance": key_distance,
+    "fill_azimuth": fill_azimuth,
+    "fill_elevation": fill_elevation,
+    "fill_temp": fill_data.temperature,
+    "fill_intensity": fill_data.energy,
+    "fill_distance": fill_distance
+  },
+  "notes": "Baseline for " + face_name
+}
+
+# Print
+print(json.dumps(data, indent=4))
+
+# Save JSON
+json_path = os.path.join(json_folder, face_name + '_baseline.json')
+with open(json_path, 'w') as f:
+  json.dump(data, f, indent=4)
+
+print(f"JSON saved: {json_path}")
