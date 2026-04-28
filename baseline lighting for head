@@ -3,7 +3,7 @@ import math
 from mathutils import Vector, Euler
 
 # User-configurable names
-face_name = 'Head'  # Update to your face object name
+face_name = 'FBHead'  # Update to your face object name
 
 # Baselines
 azimuth_deg = 45
