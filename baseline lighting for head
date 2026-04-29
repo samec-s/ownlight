@@ -10,8 +10,8 @@ azimuth_deg = 45
 elevation_deg = 30
 distance = 0.8
 temp = 6200.0
-key_intensity = 4.0
-fill_intensity = 1.0  # 0.25 ratio for balanced shadows
+key_intensity = 7.0
+fill_intensity = 4.0  # 0.25 ratio for balanced shadows
 light_size = 0.2  # Panel size m
 
 # To radians
